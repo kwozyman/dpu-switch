@@ -4,6 +4,7 @@ RequiresMountsFor=%t/containers
 
 [Service]
 SuccessExitStatus=0 1
+RemainAfterExit=True
 Environment=PODMAN_SYSTEMD_UNIT=%n
 EnvironmentFile=-/etc/default/bluefield
 ExecStart=/bin/bash -c '/usr/bin/podman run --pull always --replace --rm --pid host --network host --user 0 --name bf-switch --privileged --volume /dev:/dev --env BF_MODE --entrypoint /usr/local/bin/bf-switch quay.io/kwozyman/toolbox:bluefield && shutdown -r +1'
