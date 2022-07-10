@@ -1,0 +1,55 @@
+#!/bin/bash
+
+set -e
+
+mode=${BF_MODE:-query}
+device=${1:-"$(mstconfig q | grep "Device type:    BlueField2" -C 3 | grep Device: | awk '{print $2}')"}
+echo Found device: ${device}
+
+fwreset () {
+    mstfwreset -y -d "$(echo "${device}" | awk -F/ '{print $(NF-1)}')" reset
+    echo "Switched to ${mode} mode."
+    exit 0
+}
+
+query () {
+    current_config=$(mstconfig -d "${device}" q \
+        INTERNAL_CPU_MODEL \
+        INTERNAL_CPU_PAGE_SUPPLIER \
+        INTERNAL_CPU_ESWITCH_MANAGER \
+        INTERNAL_CPU_IB_VPORT0 \
+        INTERNAL_CPU_OFFLOAD_ENGINE | tail -n 5 | awk '{print $2}' | xargs echo)
+    echo "Current DPU configuration: ${current_config}"
+}
+
+query
+case "${mode}" in
+    dpu)
+        if [ "${current_config}" != "EMBEDDED_CPU(1) ECPF(0) ECPF(0) ECPF(0) ENABLED(0)" ]; then
+            mstconfig -y -d "${device}" s \
+                INTERNAL_CPU_MODEL=EMBEDDED_CPU \
+                INTERNAL_CPU_PAGE_SUPPLIER=ECPF \
+                INTERNAL_CPU_ESWITCH_MANAGER=ECPF \
+                INTERNAL_CPU_IB_VPORT0=ECPF \
+                INTERNAL_CPU_OFFLOAD_ENGINE=ENABLED
+            fwreset
+        else
+            echo "DPU already in DPU mode."
+        fi
+        ;;
+
+    nic)
+        if [ "${current_config}" != "EMBEDDED_CPU(1) EXT_HOST_PF(1) EXT_HOST_PF(1) EXT_HOST_PF(1) DISABLED(1)" ]; then
+            mstconfig -y -d "${device}" s \
+                INTERNAL_CPU_MODEL=EMBEDDED_CPU \
+                INTERNAL_CPU_PAGE_SUPPLIER=EXT_HOST_PF \
+                INTERNAL_CPU_ESWITCH_MANAGER=EXT_HOST_PF \
+                INTERNAL_CPU_IB_VPORT0=EXT_HOST_PF \
+                INTERNAL_CPU_OFFLOAD_ENGINE=DISABLED
+            fwreset
+        else
+            echo "DPU already in SmartNIC mode."
+        fi
+        ;;
+esac
+exit 1

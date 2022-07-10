@@ -1,0 +1,4 @@
+#!/bin/bash
+
+echo BOOT_MODE 1 > /dev/rshim0/misc
+echo SW_RESET 1 > /dev/rshim0/misc
