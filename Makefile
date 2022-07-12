@@ -7,11 +7,15 @@ default: build-container
 
 install: install-systemd
 
+install-mco:
+	oc apply -f manifests/bf2-services.yml
 install-systemd:
-	cp systemd/*.service /etc/systemd/system/
+	yq '.spec.config.systemd.units[0].contents' manifests/bf2-services.yml > /etc/systemd/system/rshim.service
+	yq '.spec.config.systemd.units[1].contents' manifests/bf2-services.yml > /etc/systemd/system/dpu-switch.service
 	systemctl daemon-reload
 install-remote-debug:
-	scp systemd/*.service root@$(REMOTE_DEBUG_SERVER):/etc/systemd/system/
+	yq '.spec.config.systemd.units[0].contents' manifests/bf2-services.yml | ssh root@$(REMOTE_DEBUG_SERVER) "cat > /etc/systemd/system/rshim.service"
+	yq '.spec.config.systemd.units[0].contents' manifests/bf2-services.yml | ssh root@$(REMOTE_DEBUG_SERVER) "cat > /etc/systemd/system/dpu-switch.service"
 	ssh root@$(REMOTE_DEBUG_SERVER) systemctl daemon-reload
 
 build-container:
