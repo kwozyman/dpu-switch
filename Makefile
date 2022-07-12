@@ -3,7 +3,7 @@ SHELL := bash
 CONTAINER_TAG=quay.io/kwozyman/toolbox:bluefield
 REMOTE_DEBUG_SERVER=wsfd-advnetlab40.anl.lab.eng.bos.redhat.com
 
-default: build-container
+default: build-container install-mco
 
 install: install-systemd
 
