@@ -5,7 +5,7 @@ REMOTE_DEBUG_SERVER=10.19.128.114
 aicli=podman run --net host -it --rm -e AI_OFFLINETOKEN="$(shell cat ~/.kube/openshift_token.txt)" -v $(HOME)/.aicli:/root/.aicli:Z -v $(HOME)/.ssh:/root/.ssh:Z,ro -v $(PWD):/workdir -v $(HOME)/.aicli/openshift_pull_prod.json:/workdir/openshift_pull.json --workdir /workdir quay.io/karmab/aicli
 CLUSTER_NAME='bf2testing'
 
-default: build-container install-mco
+default: cluster iso
 
 install: install-systemd
 
@@ -24,6 +24,7 @@ cluster: FORCE
 	echo "sno: true" > cluster.yaml
 	echo "manifests: .rendered" >> cluster.yaml
 	echo "base_dns_domain: redhat.com" >> cluster.yaml
+	echo "additional_ntp_source: 0.north-america.pool.ntp.org" >> cluster.yaml
 	echo -n "ignition_config_override: '" >> cluster.yaml
 	cat cluster/disable-nic-template.yaml | yq '.metadata.labels["machineconfiguration.openshift.io/role"]="master" | .metadata.name="disable-nic-master"' | yq .spec.config.storage.files[0].contents.source=\"data:text/plain\;charset=utf-8\;base64,$(shell cat cluster/disabled-nics.conf | base64 -w0)\" -o json | jq '.spec.config' | jq -r '.ignition.config={}' | jq -cj  >> cluster.yaml && echo "'"  >> cluster.yaml
 	cat cluster/static-network-aicli.yaml >> cluster.yaml
