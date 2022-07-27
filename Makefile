@@ -38,7 +38,11 @@ build-container:
 	podman build . --tag $(CONTAINER_TAG)
 	podman push $(CONTAINER_TAG)
 
-clean:
+
+clean: clean-cluster clean-files
+clean-cluster:
+	$(aicli) delete cluster $(CLUSTER_NAME)
+clean-files:
 	rm cluster.yaml
 	rm -rf .rendered
 
