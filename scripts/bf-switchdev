@@ -1,0 +1,26 @@
+#!/bin/bash
+ 
+mode="switchdev"
+
+modprobe -rv mlx5_{ib,core}
+ 
+for pdev in $(/usr/sbin/lspci -d 15b3: -D | awk '{print $1}')
+do
+    # ignore VFs and PCI bridge
+    if /usr/sbin/lspci -s ${pdev} | grep -qiE "PCI bridge|Virtual" ; then
+   	 continue
+    fi
+ 
+    if devlink dev | grep -q "${pdev}" ; then
+   	 msg=$(devlink dev eswitch set pci/${pdev} mode ${mode} 2>&1)
+   	 if [ $? -eq 0 ]; then
+   		 echo "connectx_eswitch_mode_config: ${pdev}: eswitch mode set to '${mode}'" > /dev/kmsg
+   	 else
+   		 echo "connectx_eswitch_mode_config: ${pdev}: $msg" > /dev/kmsg
+   	 fi
+    else
+   	 echo "connectx_eswitch_mode_config: ${pdev}: devlink dev not supported, skipping.'" > /dev/kmsg
+    fi
+done
+
+modprobe -av mlx5_{ib,core}
