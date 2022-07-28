@@ -12,7 +12,7 @@ spec:
       files:
         - path: /etc/default/bluefield
           contents:
-            source: "data:,BF_MODE%3dquery%0A"
+            source: "data:,BF_MODE%3dnic%0A"
           user:
             name: root
           group:
