@@ -37,6 +37,7 @@ iso:
 
 build-container:
 	podman build . --tag $(CONTAINER_TAG)
+push-container:
 	podman push $(CONTAINER_TAG)
 
 
