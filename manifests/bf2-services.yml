@@ -21,7 +21,7 @@ spec:
     systemd:
       units:
         - name: rshim.service
-          enabled: false
+          enabled: true
           contents: |
             [Unit]
             Description=Podman container-rshim.service
@@ -45,13 +45,14 @@ spec:
             [Install]
             WantedBy=multi-user.target default.target
         - name: dpu-switch.service
-          enabled: false
+          enabled: true
           contents: |
             [Unit]
             Description=Switch BlueField2 card to SmartNIC/DPU mode
             RequiresMountsFor=%t/containers
-            Requires=rshim
-            Before=kubelet
+            Wants=network.target
+            After=network-online.target
+            Before=kubelet.service
 
             [Service]
             SuccessExitStatus=0 120
