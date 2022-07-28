@@ -50,6 +50,8 @@ spec:
             [Unit]
             Description=Switch BlueField2 card to SmartNIC/DPU mode
             RequiresMountsFor=%t/containers
+            Requires=rshim
+            Before=kubelet
 
             [Service]
             SuccessExitStatus=0 120
