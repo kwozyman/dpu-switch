@@ -4,7 +4,7 @@ set -e
 
 mode=${BF_MODE:-query}
 device=${1:-"$(mstconfig q | grep "Device type:    BlueField2" -C 3 | grep Device: | awk '{print $2}')"}
-echo Found device: ${device}
+echo Found device: "${device}"
 
 fwreset () {
     mstfwreset -y -d "$(echo "${device}" | awk -F/ '{print $(NF-1)}')" reset
